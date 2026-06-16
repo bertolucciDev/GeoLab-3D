@@ -1,15 +1,23 @@
-export function Cone3D({ radius, height } : { radius: number, height: number}) {
+interface Props {
+    radius: number;
+    height: number;
+  }
+  
+  export function Cone3D({
+    radius,
+    height,
+  }: Props) {
     return (
-        <mesh>
-            <coneGeometry 
-                args={[
-                    radius,
-                    height,
-                    64
-                ]}
-            />
-
-            <meshStandardMaterial />
-        </mesh>
-    )
-}
+      <mesh>
+        <coneGeometry
+          args={[
+            Math.max(radius, 0.1),
+            Math.max(height, 0.1),
+            64,
+          ]}
+        />
+  
+        <meshStandardMaterial />
+      </mesh>
+    );
+  }

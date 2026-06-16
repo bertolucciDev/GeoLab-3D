@@ -1,14 +1,18 @@
-/// <reference types="@react-three/fiber" />
-
-export function Sphere3D({
-    radius,
-  }: {
+interface Props {
     radius: number;
-  }) {
+  }
+  
+  export function Sphere3D({
+    radius,
+  }: Props) {
     return (
       <mesh>
         <sphereGeometry
-          args={[radius, 64, 64]}
+          args={[
+            Math.max(radius, 0.1),
+            64,
+            64,
+          ]}
         />
   
         <meshStandardMaterial />

@@ -1,16 +1,19 @@
 interface Props {
-    volume: number
-}
-
-export function ResultCard({ volume }: Props) {
+    volume: number;
+  }
+  
+  export function ResultCard({
+    volume,
+  }: Props) {
     return (
-        <div>
-            <h2>Resultado</h2>
-
-            <h1>
-                {volume.toFixed(2)}
-                u³
-            </h1>
-        </div>
-    )
-}
+      <div className="rounded border p-4">
+        <h2 className="mb-2 text-xl font-bold">
+          Resultado
+        </h2>
+  
+        <p className="text-3xl">
+          {volume.toFixed(2)} u³
+        </p>
+      </div>
+    );
+  }

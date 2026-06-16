@@ -1,18 +1,24 @@
-/// <reference types="@react-three/fiber" />
-
-export function Cylinder3D({ radius, height} : { radius: number, height: number }) {
+interface Props {
+    radius: number;
+    height: number;
+  }
+  
+  export function Cylinder3D({
+    radius,
+    height,
+  }: Props) {
     return (
-        <mesh>
-            <cylinderGeometry 
-                args={[
-                    radius,
-                    radius,
-                    height,
-                    64,
-                ]}
-            />
-
-            <meshStandardMaterial />
-        </mesh>
-    )
-}
+      <mesh>
+        <cylinderGeometry
+          args={[
+            Math.max(radius, 0.1),
+            Math.max(radius, 0.1),
+            Math.max(height, 0.1),
+            64,
+          ]}
+        />
+  
+        <meshStandardMaterial />
+      </mesh>
+    );
+  }
