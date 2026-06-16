@@ -9,11 +9,16 @@ interface Props {
   onSubmit: (
     values: Record<string, number>
   ) => void;
+
+  onValuesChange?: (
+    values: Record<string, number>
+  ) => void;
 }
 
 export function DynamicForm({
   fields,
   onSubmit,
+  onValuesChange,
 }: Props) {
   const [values, setValues] =
     useState<Record<string, number>>({});
@@ -22,10 +27,14 @@ export function DynamicForm({
     field: string,
     value: string
   ) {
-    setValues((old) => ({
-      ...old,
-      [field]: Number(value),
-    }));
+    const next = {
+        ...values,
+        [field]: Number(value),
+    };
+
+    setValues(next)
+
+    onValuesChange?.(next)
   }
 
   return (
