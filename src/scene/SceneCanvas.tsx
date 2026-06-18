@@ -10,7 +10,9 @@ interface Props {
 }
 
 export function SceneCanvas({ children, solid, values }: Props) {
-  const height = values.height;
+  const side = values.side ?? 0;
+  const usesTriangleHeight = solid.baseShape?.includes("triangle") ?? false;
+  const height = usesTriangleHeight ? values.triangleHeight ?? (Math.sqrt(3) * side) / 2 : values.height;
   const radius = values.radius;
   const base = values.side ?? values.width ?? values.base;
   return (
@@ -31,7 +33,7 @@ export function SceneCanvas({ children, solid, values }: Props) {
           <Html position={[-4.2, 3, 0]}>
             <div className="grid gap-1 rounded-xl bg-white/90 px-3 py-2 text-xs font-semibold shadow dark:bg-slate-900/90">
               {radius !== undefined && <span>Raio = {radius}</span>}
-              {height !== undefined && <span>Altura = {height}</span>}
+              {height !== undefined && <span>{usesTriangleHeight ? "Altura triangular/3D" : "Altura"} = {height.toFixed(2)}</span>}
               {base !== undefined && <span>Base = {base}</span>}
               <span>Arestas e escala: {solid.name}</span>
             </div>

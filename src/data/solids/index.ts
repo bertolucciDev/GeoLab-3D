@@ -169,9 +169,14 @@ function baseArea(baseShape: BaseShape, values: Record<string, number>) {
   return { area: (base * triangleHeight) / 2, expression: `\\frac{${base}\\cdot ${fixed(triangleHeight)}}{2}`, prompt: `Quanto vale (${base} × ${fixed(triangleHeight)}) ÷ 2?`, hint: "A área da base triangular usa a base do triângulo vezes a altura da base triangular, dividido por 2." };
 }
 
+const triangularBases: BaseShape[] = ["equilateral-triangle", "isosceles-triangle", "scalene-triangle"];
+const solidHeightInput: InputField = { id: "height", label: "Altura 3D do sólido", min: 0, defaultValue: 5, unit: "u" };
+
 const polyhedra = (kind: "prism" | "pyramid") => (Object.keys(baseLabels) as BaseShape[]).map((baseShape) => {
   const name = `${kind === "prism" ? "Prisma" : "Pirâmide"} ${baseLabels[baseShape]}`;
   const factor = kind === "prism" ? 1 : 1 / 3;
+  const usesTriangleHeightAsSolidHeight = triangularBases.includes(baseShape);
+  const inputs = usesTriangleHeightAsSolidHeight ? baseInputs[baseShape] : [...baseInputs[baseShape], solidHeightInput];
   return {
     id: `${kind}-${baseShape}`,
     name,
@@ -179,9 +184,10 @@ const polyhedra = (kind: "prism" | "pyramid") => (Object.keys(baseLabels) as Bas
     kind,
     baseShape,
     formula: kind === "prism" ? "V=A_b\\cdot h" : "V=\\frac{A_b\\cdot h}{3}",
-    inputs: [...baseInputs[baseShape], { id: "height", label: "Altura 3D do sólido", min: 0, defaultValue: 5, unit: "u" }],
+    inputs,
     calculate(values: Record<string, number>) {
-      const h = positive(values.height, 0);
+      const baseTriangleHeight = positive(values.triangleHeight, (Math.sqrt(3) * positive(values.side, 0)) / 2);
+      const h = usesTriangleHeightAsSolidHeight ? baseTriangleHeight : positive(values.height, 0);
       const base = baseArea(baseShape, values);
       const product = base.area * h;
       const volume = product * factor;
@@ -190,7 +196,7 @@ const polyhedra = (kind: "prism" | "pyramid") => (Object.keys(baseLabels) as Bas
       const learningSteps: LearningStep[] = [
         formulaStep(kind, `Qual fórmula calcula o volume de ${name.toLowerCase()}?`, kind === "prism" ? "Prismas multiplicam a área da base pela altura." : "Pirâmides usam a área da base vezes a altura e depois dividem por 3."),
         numberStep("base-area", "Calcule a área da base", base.prompt, base.area, base.hint, `A_b=${base.expression}=${fixed(base.area)}`),
-        numberStep("base-height", "Multiplique pela altura", `Quanto vale ${fixed(base.area)} × ${h}?`, product, "Agora conecte a área da base bidimensional com a altura 3D do sólido.", `${fixed(base.area)}×${h}=${fixed(product)}`),
+        numberStep("base-height", "Multiplique pela altura", `Quanto vale ${fixed(base.area)} × ${h}?`, product, usesTriangleHeightAsSolidHeight ? "Para bases triangulares, esta versão usa a própria altura da base triangular como altura do sólido." : "Agora conecte a área da base bidimensional com a altura 3D do sólido.", `${fixed(base.area)}×${h}=${fixed(product)}`),
       ];
       if (kind === "pyramid") {
         learningSteps.push(numberStep("volume", "Divida por 3", `Quanto vale ${fixed(product)} ÷ 3?`, volume, "Pirâmides ocupam um terço do prisma correspondente.", `${fixed(product)}÷3=${fixed(volume)}`));
