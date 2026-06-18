@@ -3,14 +3,16 @@ import type { InputField } from "../../types/solid";
 interface Props {
   fields: InputField[];
   values: Record<string, number>;
+  errors: string[];
   onValuesChange: (values: Record<string, number>) => void;
 }
 
-export function DynamicForm({ fields, values, onValuesChange }: Props) {
+export function DynamicForm({ fields, values, errors, onValuesChange }: Props) {
   return (
     <section className="card p-5" aria-labelledby="dimensions-title">
       <h2 id="dimensions-title" className="text-lg font-semibold">Dimensões</h2>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">O modelo e os cálculos atualizam em tempo real.</p>
+      {errors.length > 0 && <div className="mt-4 rounded-2xl bg-amber-50 p-3 text-sm text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">{errors.map((error) => <p key={error}>{error}</p>)}</div>}
       <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {fields.map((field) => (
           <label key={field.id} className="grid gap-2 text-sm font-medium">
