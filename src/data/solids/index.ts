@@ -150,8 +150,8 @@ const baseInputs: Record<BaseShape, InputField[]> = {
   square: [{ id: "side", label: "Lado da base", min: 0, defaultValue: 3, unit: "u" }],
   rectangle: [{ id: "width", label: "Largura", min: 0, defaultValue: 4, unit: "u" }, { id: "depth", label: "Profundidade", min: 0, defaultValue: 2, unit: "u" }],
   "equilateral-triangle": [{ id: "side", label: "Lado do triângulo", min: 0, defaultValue: 4, unit: "u" }],
-  "isosceles-triangle": [{ id: "base", label: "Base do triângulo", min: 0, defaultValue: 4, unit: "u" }, { id: "triangleHeight", label: "Altura do triângulo", min: 0, defaultValue: 3, unit: "u" }],
-  "scalene-triangle": [{ id: "base", label: "Base do triângulo", min: 0, defaultValue: 5, unit: "u" }, { id: "triangleHeight", label: "Altura do triângulo", min: 0, defaultValue: 3, unit: "u" }],
+  "isosceles-triangle": [{ id: "base", label: "Base do triângulo", min: 0, defaultValue: 4, unit: "u" }, { id: "triangleHeight", label: "Altura da base triangular", min: 0, defaultValue: 3, unit: "u" }],
+  "scalene-triangle": [{ id: "base", label: "Base do triângulo", min: 0, defaultValue: 5, unit: "u" }, { id: "triangleHeight", label: "Altura da base triangular", min: 0, defaultValue: 3, unit: "u" }],
   "regular-hexagon": [{ id: "side", label: "Lado do hexágono", min: 0, defaultValue: 3, unit: "u" }],
 };
 
@@ -166,7 +166,7 @@ function baseArea(baseShape: BaseShape, values: Record<string, number>) {
     return { area: width * depth, expression: `${width}\\cdot ${depth}`, prompt: `Quanto vale ${width} × ${depth}?`, hint: "A área do retângulo é largura vezes profundidade." };
   }
   if (baseShape === "regular-hexagon") return { area: (3 * Math.sqrt(3) * side ** 2) / 2, expression: `\\frac{3\\sqrt{3}\\cdot ${side}^2}{2}`, prompt: `Quanto vale a área do hexágono regular de lado ${side}?`, hint: "Use A = 3√3·l²/2 para hexágonos regulares." };
-  return { area: (base * triangleHeight) / 2, expression: `\\frac{${base}\\cdot ${fixed(triangleHeight)}}{2}`, prompt: `Quanto vale (${base} × ${fixed(triangleHeight)}) ÷ 2?`, hint: "Toda área triangular usa base vezes altura dividido por 2." };
+  return { area: (base * triangleHeight) / 2, expression: `\\frac{${base}\\cdot ${fixed(triangleHeight)}}{2}`, prompt: `Quanto vale (${base} × ${fixed(triangleHeight)}) ÷ 2?`, hint: "A área da base triangular usa a base do triângulo vezes a altura da base triangular, dividido por 2." };
 }
 
 const polyhedra = (kind: "prism" | "pyramid") => (Object.keys(baseLabels) as BaseShape[]).map((baseShape) => {
@@ -179,7 +179,7 @@ const polyhedra = (kind: "prism" | "pyramid") => (Object.keys(baseLabels) as Bas
     kind,
     baseShape,
     formula: kind === "prism" ? "V=A_b\\cdot h" : "V=\\frac{A_b\\cdot h}{3}",
-    inputs: [...baseInputs[baseShape], { id: "height", label: "Altura do sólido", min: 0, defaultValue: 5, unit: "u" }],
+    inputs: [...baseInputs[baseShape], { id: "height", label: "Altura 3D do sólido", min: 0, defaultValue: 5, unit: "u" }],
     calculate(values: Record<string, number>) {
       const h = positive(values.height, 0);
       const base = baseArea(baseShape, values);
@@ -190,7 +190,7 @@ const polyhedra = (kind: "prism" | "pyramid") => (Object.keys(baseLabels) as Bas
       const learningSteps: LearningStep[] = [
         formulaStep(kind, `Qual fórmula calcula o volume de ${name.toLowerCase()}?`, kind === "prism" ? "Prismas multiplicam a área da base pela altura." : "Pirâmides usam a área da base vezes a altura e depois dividem por 3."),
         numberStep("base-area", "Calcule a área da base", base.prompt, base.area, base.hint, `A_b=${base.expression}=${fixed(base.area)}`),
-        numberStep("base-height", "Multiplique pela altura", `Quanto vale ${fixed(base.area)} × ${h}?`, product, "Agora conecte a base bidimensional com a altura do sólido.", `${fixed(base.area)}×${h}=${fixed(product)}`),
+        numberStep("base-height", "Multiplique pela altura", `Quanto vale ${fixed(base.area)} × ${h}?`, product, "Agora conecte a área da base bidimensional com a altura 3D do sólido.", `${fixed(base.area)}×${h}=${fixed(product)}`),
       ];
       if (kind === "pyramid") {
         learningSteps.push(numberStep("volume", "Divida por 3", `Quanto vale ${fixed(product)} ÷ 3?`, volume, "Pirâmides ocupam um terço do prisma correspondente.", `${fixed(product)}÷3=${fixed(volume)}`));
