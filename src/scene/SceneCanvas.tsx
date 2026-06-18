@@ -10,11 +10,9 @@ interface Props {
 }
 
 export function SceneCanvas({ children, solid, values }: Props) {
-  const side = values.side ?? 0;
-  const usesTriangleHeight = solid.baseShape?.includes("triangle") ?? false;
-  const height = usesTriangleHeight ? values.triangleHeight ?? (Math.sqrt(3) * side) / 2 : values.height;
+  const height = values.height;
   const radius = values.radius;
-  const base = values.side ?? values.width ?? values.base;
+  const base = values.side ?? values.length ?? values.base;
   return (
     <section className="card overflow-hidden" aria-label="Visualização 3D educacional">
       <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-slate-800">
@@ -33,7 +31,7 @@ export function SceneCanvas({ children, solid, values }: Props) {
           <Html position={[-4.2, 3, 0]}>
             <div className="grid gap-1 rounded-xl bg-white/90 px-3 py-2 text-xs font-semibold shadow dark:bg-slate-900/90">
               {radius !== undefined && <span>Raio = {radius}</span>}
-              {height !== undefined && <span>{usesTriangleHeight ? "Altura triangular/3D" : "Altura"} = {height.toFixed(2)}</span>}
+              {height !== undefined && <span>Altura = {height.toFixed(2)}</span>}
               {base !== undefined && <span>Base = {base}</span>}
               <span>Arestas e escala: {solid.name}</span>
             </div>

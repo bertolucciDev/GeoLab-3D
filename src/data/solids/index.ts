@@ -1,6 +1,7 @@
 import type { BaseShape, CalculationResult, InputField, LearningStep, SolidDefinition } from "../../types/solid";
 
 export const PI = 3.14;
+const SQRT_3 = 1.73;
 const EPSILON = 0.01;
 const fixed = (value: number) => value.toFixed(2);
 const positive = (value: number | undefined, fallback: number) => (Number.isFinite(value) && value !== undefined && value >= 0 ? value : fallback);
@@ -147,36 +148,35 @@ const baseLabels: Record<BaseShape, string> = {
 };
 
 const baseInputs: Record<BaseShape, InputField[]> = {
-  square: [{ id: "side", label: "Lado da base", min: 0, defaultValue: 3, unit: "u" }],
-  rectangle: [{ id: "width", label: "Largura", min: 0, defaultValue: 4, unit: "u" }, { id: "depth", label: "Profundidade", min: 0, defaultValue: 2, unit: "u" }],
+  square: [{ id: "side", label: "Aresta da base", min: 0, defaultValue: 3, unit: "u" }],
+  rectangle: [{ id: "length", label: "Comprimento da base", min: 0, defaultValue: 4, unit: "u" }, { id: "width", label: "Largura da base", min: 0, defaultValue: 2, unit: "u" }],
   "equilateral-triangle": [{ id: "side", label: "Lado do triângulo", min: 0, defaultValue: 4, unit: "u" }],
-  "isosceles-triangle": [{ id: "base", label: "Base do triângulo", min: 0, defaultValue: 4, unit: "u" }, { id: "triangleHeight", label: "Altura da base triangular", min: 0, defaultValue: 3, unit: "u" }],
-  "scalene-triangle": [{ id: "base", label: "Base do triângulo", min: 0, defaultValue: 5, unit: "u" }, { id: "triangleHeight", label: "Altura da base triangular", min: 0, defaultValue: 3, unit: "u" }],
+  "isosceles-triangle": [{ id: "base", label: "Base do triângulo", min: 0, defaultValue: 4, unit: "u" }, { id: "triangleHeight", label: "Altura do triângulo", min: 0, defaultValue: 3, unit: "u" }],
+  "scalene-triangle": [{ id: "base", label: "Base do triângulo", min: 0, defaultValue: 5, unit: "u" }, { id: "triangleHeight", label: "Altura do triângulo", min: 0, defaultValue: 3, unit: "u" }],
   "regular-hexagon": [{ id: "side", label: "Lado do hexágono", min: 0, defaultValue: 3, unit: "u" }],
 };
 
 function baseArea(baseShape: BaseShape, values: Record<string, number>) {
   const side = positive(values.side, 0);
   const base = positive(values.base, side);
-  const triangleHeight = positive(values.triangleHeight, (Math.sqrt(3) * side) / 2);
+  const triangleHeight = positive(values.triangleHeight, 0);
   if (baseShape === "square") return { area: side ** 2, expression: `${side}^2`, prompt: `Quanto vale ${side}²?`, hint: "A área do quadrado é lado ao quadrado." };
   if (baseShape === "rectangle") {
+    const length = positive(values.length, 0);
     const width = positive(values.width, 0);
-    const depth = positive(values.depth, 0);
-    return { area: width * depth, expression: `${width}\\cdot ${depth}`, prompt: `Quanto vale ${width} × ${depth}?`, hint: "A área do retângulo é largura vezes profundidade." };
+    return { area: length * width, expression: `${length}\\cdot ${width}`, prompt: `Quanto vale ${length} × ${width}?`, hint: "A área do retângulo é comprimento vezes largura." };
   }
-  if (baseShape === "regular-hexagon") return { area: (3 * Math.sqrt(3) * side ** 2) / 2, expression: `\\frac{3\\sqrt{3}\\cdot ${side}^2}{2}`, prompt: `Quanto vale a área do hexágono regular de lado ${side}?`, hint: "Use A = 3√3·l²/2 para hexágonos regulares." };
-  return { area: (base * triangleHeight) / 2, expression: `\\frac{${base}\\cdot ${fixed(triangleHeight)}}{2}`, prompt: `Quanto vale (${base} × ${fixed(triangleHeight)}) ÷ 2?`, hint: "A área da base triangular usa a base do triângulo vezes a altura da base triangular, dividido por 2." };
+  if (baseShape === "equilateral-triangle") return { area: (side ** 2 * SQRT_3) / 4, expression: `\\frac{${side}^2\\cdot 1.73}{4}`, prompt: `Quanto vale (${side}² × 1,73) ÷ 4?`, hint: "Para triângulo equilátero use A = lado² × 1,73 ÷ 4." };
+  if (baseShape === "regular-hexagon") return { area: (3 * SQRT_3 * side ** 2) / 2, expression: `\\frac{3\\cdot 1.73\\cdot ${side}^2}{2}`, prompt: `Quanto vale (3 × 1,73 × ${side}²) ÷ 2?`, hint: "Use A = 3 × 1,73 × lado² ÷ 2 para hexágonos regulares." };
+  return { area: (base * triangleHeight) / 2, expression: `\\frac{${base}\\cdot ${fixed(triangleHeight)}}{2}`, prompt: `Quanto vale (${base} × ${fixed(triangleHeight)}) ÷ 2?`, hint: "A área da base triangular usa a base do triângulo vezes a altura do triângulo, dividido por 2." };
 }
 
-const triangularBases: BaseShape[] = ["equilateral-triangle", "isosceles-triangle", "scalene-triangle"];
-const solidHeightInput: InputField = { id: "height", label: "Altura 3D do sólido", min: 0, defaultValue: 5, unit: "u" };
+const solidHeightInput: InputField = { id: "height", label: "Altura do sólido", min: 0, defaultValue: 5, unit: "u" };
 
 const polyhedra = (kind: "prism" | "pyramid") => (Object.keys(baseLabels) as BaseShape[]).map((baseShape) => {
   const name = `${kind === "prism" ? "Prisma" : "Pirâmide"} ${baseLabels[baseShape]}`;
   const factor = kind === "prism" ? 1 : 1 / 3;
-  const usesTriangleHeightAsSolidHeight = triangularBases.includes(baseShape);
-  const inputs = usesTriangleHeightAsSolidHeight ? baseInputs[baseShape] : [...baseInputs[baseShape], solidHeightInput];
+  const inputs = [...baseInputs[baseShape], solidHeightInput];
   return {
     id: `${kind}-${baseShape}`,
     name,
@@ -186,8 +186,7 @@ const polyhedra = (kind: "prism" | "pyramid") => (Object.keys(baseLabels) as Bas
     formula: kind === "prism" ? "V=A_b\\cdot h" : "V=\\frac{A_b\\cdot h}{3}",
     inputs,
     calculate(values: Record<string, number>) {
-      const baseTriangleHeight = positive(values.triangleHeight, (Math.sqrt(3) * positive(values.side, 0)) / 2);
-      const h = usesTriangleHeightAsSolidHeight ? baseTriangleHeight : positive(values.height, 0);
+      const h = positive(values.height, 0);
       const base = baseArea(baseShape, values);
       const product = base.area * h;
       const volume = product * factor;
@@ -196,7 +195,7 @@ const polyhedra = (kind: "prism" | "pyramid") => (Object.keys(baseLabels) as Bas
       const learningSteps: LearningStep[] = [
         formulaStep(kind, `Qual fórmula calcula o volume de ${name.toLowerCase()}?`, kind === "prism" ? "Prismas multiplicam a área da base pela altura." : "Pirâmides usam a área da base vezes a altura e depois dividem por 3."),
         numberStep("base-area", "Calcule a área da base", base.prompt, base.area, base.hint, `A_b=${base.expression}=${fixed(base.area)}`),
-        numberStep("base-height", "Multiplique pela altura", `Quanto vale ${fixed(base.area)} × ${h}?`, product, usesTriangleHeightAsSolidHeight ? "Para bases triangulares, esta versão usa a própria altura da base triangular como altura do sólido." : "Agora conecte a área da base bidimensional com a altura 3D do sólido.", `${fixed(base.area)}×${h}=${fixed(product)}`),
+        numberStep("base-height", "Multiplique pela altura", `Quanto vale ${fixed(base.area)} × ${h}?`, product, "Agora multiplique a área da base pela altura do sólido.", `${fixed(base.area)}×${h}=${fixed(product)}`),
       ];
       if (kind === "pyramid") {
         learningSteps.push(numberStep("volume", "Divida por 3", `Quanto vale ${fixed(product)} ÷ 3?`, volume, "Pirâmides ocupam um terço do prisma correspondente.", `${fixed(product)}÷3=${fixed(volume)}`));

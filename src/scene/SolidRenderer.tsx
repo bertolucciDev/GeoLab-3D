@@ -6,15 +6,12 @@ interface Props {
 }
 
 const v = (values: Record<string, number>, key: string, fallback: number) => Math.max(values[key] ?? fallback, 0.1);
-const triangleHeight = (values: Record<string, number>, side: number) => Math.max(values.triangleHeight ?? (Math.sqrt(3) * side) / 2, 0.1);
-const usesTriangleHeight = (solid: SolidDefinition) => solid.baseShape?.includes("triangle") ?? false;
-
 export function SolidRenderer({ solid, values }: Props) {
   const side = v(values, "side", 3);
-  const height = usesTriangleHeight(solid) ? triangleHeight(values, side) : v(values, "height", 4);
+  const height = v(values, "height", 4);
   const radius = v(values, "radius", 2);
-  const width = v(values, "width", side);
-  const depth = v(values, "depth", side);
+  const width = v(values, "length", v(values, "width", side));
+  const depth = v(values, "width", side);
   const color = solid.kind === "pyramid" ? "#38bdf8" : solid.kind === "prism" ? "#2563eb" : "#60a5fa";
 
   if (solid.kind === "sphere") return <mesh><sphereGeometry args={[radius, 48, 48]} /><meshStandardMaterial color={color} roughness={0.35} metalness={0.1} /></mesh>;
