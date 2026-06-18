@@ -1,40 +1,8 @@
+import type { SolidCategory } from "../../types/solid";
 import { solids } from "../../data/solids";
-
-interface Props {
-  selected: string;
-
-  onSelect: (
-    solidId: string
-  ) => void;
-}
-
-export function Sidebar({
-  selected,
-  onSelect,
-}: Props) {
-  return (
-    <aside className="border-r p-4">
-      <h2 className="mb-4 font-semibold">
-        Sólidos
-      </h2>
-
-      <div className="flex flex-col gap-2">
-        {solids.map((solid) => (
-          <button
-            key={solid.id}
-            onClick={() =>
-              onSelect(solid.id)
-            }
-            className={`rounded border p-2 ${
-              selected === solid.id
-                ? "bg-blue-500 text-white"
-                : ""
-            }`}
-          >
-            {solid.name}
-          </button>
-        ))}
-      </div>
-    </aside>
-  );
+interface Props { selected: string; category: SolidCategory | "all"; onCategoryChange: (category: SolidCategory | "all") => void; onSelect: (solidId: string) => void; }
+const labels: Record<SolidCategory | "all", string> = { all: "Todos", round: "Corpos redondos", polyhedron: "Poliedros" };
+export function Sidebar({ selected, category, onCategoryChange, onSelect }: Props) {
+  const visible = category === "all" ? solids : solids.filter((solid) => solid.category === category);
+  return <aside className="card h-max p-4 lg:sticky lg:top-24"><h2 className="text-lg font-bold">Seleção do sólido</h2><div className="mt-4 grid grid-cols-3 gap-2 lg:grid-cols-1">{(["all", "round", "polyhedron"] as const).map((item) => <button type="button" key={item} onClick={() => onCategoryChange(item)} className={`rounded-2xl px-3 py-2 text-sm font-semibold transition focus:outline-none focus:ring-4 focus:ring-blue-500/20 ${category === item ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"}`}>{labels[item]}</button>)}</div><div className="mt-5 grid gap-2">{visible.map((solid) => <button type="button" key={solid.id} onClick={() => onSelect(solid.id)} className={`rounded-2xl border px-4 py-3 text-left transition hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-blue-500/20 ${selected === solid.id ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-200" : "border-slate-200 bg-white hover:shadow-md dark:border-slate-700 dark:bg-slate-900"}`}><span className="block font-semibold">{solid.name}</span><span className="text-xs text-slate-500 dark:text-slate-400">{solid.category === "round" ? "Corpo redondo" : solid.kind === "prism" ? "Prisma" : "Pirâmide"}</span></button>)}</div></aside>;
 }
